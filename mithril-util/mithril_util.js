@@ -1,10 +1,35 @@
 var TMITHRIL_UTIL = {};
 
 
+// Routing help
+
+TMITHRIL_UTIL._routerParams = {};
+mTroute = function(url, params) {
+  if (params == undefined) {
+    params = {};
+  }
+  TMITHRIL_UTIL._routerParams = params;
+  m.route(url);
+}
+
+mTGetAndClearParams = function() {
+  var params = TMITHRIL_UTIL._routerParams;
+  TMITHRIL_UTIL._routerParams = {};
+  return params;
+}
+
+var softRoute = function(path) {
+  if (window.location.pathname != path) {
+    window.history.pushState({}, "", path);
+  }
+};
+
+
+// View construction help
+
 function mT(tagName) {
   return new TMITHRIL_UTIL.Element(tagName);
 }
-
 
 TMITHRIL_UTIL.Element = function(tagName) {
   this.tag = tagName;
@@ -236,11 +261,18 @@ TMITHRIL_UTIL.Element.prototype.append = function(child) {
 };
 
 TMITHRIL_UTIL.Element.prototype.text = function(text) {
-  if (typeof text !== 'string' && typeof text !== 'number') {
-    console.log('Non-string, non-number argument to text(): ' + text);
+  if (typeof text === 'number') {
+    text = '' + text;
   }
-  if (text) {
-    this.children = text;
+  if (typeof text === 'string') {
+    if (text != '') {
+      this.children = text;
+    } else {
+      console.log('Using empty string in mithril_util text().');
+    }
+  } else {
+    this.children = 'Mithril Error';
+    console.log('Non-string, non-number argument to text(): "' + text + '"');
   }
   return this;
 };

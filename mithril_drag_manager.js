@@ -3,7 +3,7 @@
 // Call makeDragSource() on drag source/pickup elements.
 // Call makeDragTarget() on drag target/drop elements.
 
-TMITHRIL_UTIL.DragManager = function() {
+MITHRIL_UTIL.DragManager = function() {
   this._dragData = m.prop(null);
   this._dragElementTree = null;
   this._currentTouchTarget = null;
@@ -30,7 +30,7 @@ TMITHRIL_UTIL.DragManager = function() {
   document.addEventListener('keydown', this._blockAltDefault, false);
 };
 
-TMITHRIL_UTIL.DragManager.prototype.stop = function() {
+MITHRIL_UTIL.DragManager.prototype.stop = function() {
   document.removeEventListener('keydown', this._blockAltDefault);
 };
 
@@ -41,7 +41,7 @@ TMITHRIL_UTIL.DragManager.prototype.stop = function() {
 //   param.
 // dataTags: An array of strings indicating which drop targets are valid drops
 //   for this source.
-TMITHRIL_UTIL.DragManager.prototype.makeDragSource =
+MITHRIL_UTIL.DragManager.prototype.makeDragSource =
     function(element, dragData, dataTags, altTag, ctrlTag, shiftTag) {
   element
     .addClass('draggable')
@@ -144,7 +144,7 @@ TMITHRIL_UTIL.DragManager.prototype.makeDragSource =
 //   makeDragSource() when preparing the dropped element.
 //   the second is a bool which is true if the dropFunc was called for
 //   drag&drop and false if the dropFunc was called with a click shortcut.
-TMITHRIL_UTIL.DragManager.prototype.makeDragTarget =
+MITHRIL_UTIL.DragManager.prototype.makeDragTarget =
     function(element, dragMode, dropFunc) {
   var validTargetClass = 'drag_' + dragMode + '_target';
 
@@ -195,7 +195,7 @@ TMITHRIL_UTIL.DragManager.prototype.makeDragTarget =
 
 // DragManager private methods.
 
-TMITHRIL_UTIL.DragManager.prototype._getTouchElementFromEvent = function(evt) {
+MITHRIL_UTIL.DragManager.prototype._getTouchElementFromEvent = function(evt) {
   // Searchable keyword "drag"
   var currentTouch = evt.changedTouches[0];
   var x = currentTouch.clientX;
@@ -212,7 +212,7 @@ TMITHRIL_UTIL.DragManager.prototype._getTouchElementFromEvent = function(evt) {
 };
 
 
-TMITHRIL_UTIL.DragManager.prototype._setElementXYFromEvent =
+MITHRIL_UTIL.DragManager.prototype._setElementXYFromEvent =
     function(evt, element) {
   // Pull cursor X, Y position out of either mouse event or touch event.
   var x = 0;
@@ -234,7 +234,7 @@ TMITHRIL_UTIL.DragManager.prototype._setElementXYFromEvent =
 };
 
 
-TMITHRIL_UTIL.DragManager.prototype._startDrag =
+MITHRIL_UTIL.DragManager.prototype._startDrag =
     function(evt, dragTags, dragData, dragElement) {
   if (Object.keys(this._dragMode).length != 0) {
     this._clearDrag(true);
@@ -257,7 +257,7 @@ TMITHRIL_UTIL.DragManager.prototype._startDrag =
 };
 
 
-TMITHRIL_UTIL.DragManager.prototype._setDragMode = function() {
+MITHRIL_UTIL.DragManager.prototype._setDragMode = function() {
   var dragTags = arguments[0];
   if (dragTags.length == 0) {
     this._dragMode = {};
@@ -272,7 +272,7 @@ TMITHRIL_UTIL.DragManager.prototype._setDragMode = function() {
 
 // Changes the DragManager's state such that the current click shortcut behavior
 // is keyed to the current hover/click element.
-TMITHRIL_UTIL.DragManager.prototype._setupClickShortcut =
+MITHRIL_UTIL.DragManager.prototype._setupClickShortcut =
     function(evt, altTag, ctrlTag, shiftTag) {
   // Focus the element (on mouseover) so it can receive keypresses.
   evt.currentTarget.focus();
@@ -292,24 +292,24 @@ TMITHRIL_UTIL.DragManager.prototype._setupClickShortcut =
 }
 
 
-TMITHRIL_UTIL.DragManager.prototype._inDragMode = function(key) {
+MITHRIL_UTIL.DragManager.prototype._inDragMode = function(key) {
   return key in this._dragMode;
 };
 
 
-TMITHRIL_UTIL.DragManager.prototype._isDragging = function() {
+MITHRIL_UTIL.DragManager.prototype._isDragging = function() {
   return this._dragElementTree != null;
 };
 
 
 // Return whether or not a click shortcut key is pressed while hovering over
 // a draggable element.
-TMITHRIL_UTIL.DragManager.prototype._inKeyMode = function() {
+MITHRIL_UTIL.DragManager.prototype._inKeyMode = function() {
   return this._keyMode;
 };
 
 
-TMITHRIL_UTIL.DragManager.prototype._clearDrag = function(forceClearInKeyMode) {
+MITHRIL_UTIL.DragManager.prototype._clearDrag = function(forceClearInKeyMode) {
   if (this._inKeyMode() && !forceClearInKeyMode) {
     return;
   }
@@ -330,7 +330,7 @@ TMITHRIL_UTIL.DragManager.prototype._clearDrag = function(forceClearInKeyMode) {
 };
 
 
-TMITHRIL_UTIL.DragManager.prototype._setCurrentTouchTarget = function() {
+MITHRIL_UTIL.DragManager.prototype._setCurrentTouchTarget = function() {
   var newTarget = arguments[0];
   var oldTarget = this._currentTouchTarget;
   if (newTarget != oldTarget) {

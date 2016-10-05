@@ -1,20 +1,20 @@
-var TMITHRIL_UTIL = {};
+var MITHRIL_UTIL = {};
 
 
 // Routing help
 
-TMITHRIL_UTIL._routerParams = {};
-mTroute = function(url, params) {
+MITHRIL_UTIL._routerParams = {};
+muRoute = function(url, params) {
   if (params == undefined) {
     params = {};
   }
-  TMITHRIL_UTIL._routerParams = params;
+  MITHRIL_UTIL._routerParams = params;
   m.route(url);
 }
 
-mTGetAndClearParams = function() {
-  var params = TMITHRIL_UTIL._routerParams;
-  TMITHRIL_UTIL._routerParams = {};
+muGetAndClearParams = function() {
+  var params = MITHRIL_UTIL._routerParams;
+  MITHRIL_UTIL._routerParams = {};
   return params;
 }
 
@@ -27,11 +27,11 @@ var softRoute = function(path) {
 
 // View construction help
 
-function mT(tagName) {
-  return new TMITHRIL_UTIL.Element(tagName);
+function mu(tagName) {
+  return new MITHRIL_UTIL.Element(tagName);
 }
 
-TMITHRIL_UTIL.Element = function(tagName) {
+MITHRIL_UTIL.Element = function(tagName) {
   this.tag = tagName;
   this.attrs = {};
   this._tm_configs = [];
@@ -40,48 +40,48 @@ TMITHRIL_UTIL.Element = function(tagName) {
   this._tm_mouseups = [];
 };
 
-TMITHRIL_UTIL.Element.prototype = new Object();
-TMITHRIL_UTIL.Element.prototype.constructor = TMITHRIL_UTIL.Element;
+MITHRIL_UTIL.Element.prototype = new Object();
+MITHRIL_UTIL.Element.prototype.constructor = MITHRIL_UTIL.Element;
 
-TMITHRIL_UTIL.Element.prototype._initChildren = function() {
+MITHRIL_UTIL.Element.prototype._initChildren = function() {
   if (this.children == undefined) {
     this.children = [];
   }
 }
 
-TMITHRIL_UTIL.Element.prototype.num_children = function() {
+MITHRIL_UTIL.Element.prototype.num_children = function() {
   if (this.children == undefined) {
     return 0;
   }
   return this.children.length;
 }
 
-TMITHRIL_UTIL.Element.prototype.mkey = function(mkey) {
+MITHRIL_UTIL.Element.prototype.mkey = function(mkey) {
   this.attrs['key'] = mkey;
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.attr = function(key, value) {
+MITHRIL_UTIL.Element.prototype.attr = function(key, value) {
   this.attrs[key] = value;
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.blur = function(onBlur) {
+MITHRIL_UTIL.Element.prototype.blur = function(onBlur) {
   this.attrs['onblur'] = onBlur;
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.change = function(onChange) {
+MITHRIL_UTIL.Element.prototype.change = function(onChange) {
   this.attrs['onchange'] = onChange;
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.click = function(onClick) {
+MITHRIL_UTIL.Element.prototype.click = function(onClick) {
   this.attrs['onclick'] = onClick;
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.config = function(config) {
+MITHRIL_UTIL.Element.prototype.config = function(config) {
   this._tm_configs.push(config);
   if (this.attrs['config'] == null) {
     this.attrs['config'] = function(element, isInitialized, context) {
@@ -93,57 +93,57 @@ TMITHRIL_UTIL.Element.prototype.config = function(config) {
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.dragstart = function(onDragStart) {
+MITHRIL_UTIL.Element.prototype.dragstart = function(onDragStart) {
   this.attrs['ondragstart'] = onDragStart;
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.dragenter = function(onDragEnter) {
+MITHRIL_UTIL.Element.prototype.dragenter = function(onDragEnter) {
   this.attrs['ondragenter'] = onDragEnter;
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.dragover = function(onDragOver) {
+MITHRIL_UTIL.Element.prototype.dragover = function(onDragOver) {
   this.attrs['ondragover'] = onDragOver;
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.dragleave = function(onDragLeave) {
+MITHRIL_UTIL.Element.prototype.dragleave = function(onDragLeave) {
   this.attrs['ondragleave'] = onDragLeave;
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.drop = function(onDrop) {
+MITHRIL_UTIL.Element.prototype.drop = function(onDrop) {
   this.attrs['ondrop'] = onDrop;
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.input = function(onInput) {
+MITHRIL_UTIL.Element.prototype.input = function(onInput) {
   this.attrs['oninput'] = onInput;
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.keydown = function(onKeyDown) {
+MITHRIL_UTIL.Element.prototype.keydown = function(onKeyDown) {
   this.attrs['onkeydown'] = onKeyDown;
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.keyup = function(onKeyUp) {
+MITHRIL_UTIL.Element.prototype.keyup = function(onKeyUp) {
   this.attrs['onkeyup'] = onKeyUp;
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.mousedown = function(onMouseDown) {
+MITHRIL_UTIL.Element.prototype.mousedown = function(onMouseDown) {
   this.attrs['onmousedown'] = onMouseDown;
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.mousemove = function(onMouseMove) {
+MITHRIL_UTIL.Element.prototype.mousemove = function(onMouseMove) {
   this.attrs['onmousemove'] = onMouseMove;
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.mouseover = function(onMouseOver) {
+MITHRIL_UTIL.Element.prototype.mouseover = function(onMouseOver) {
   this._tm_mouseovers.push(onMouseOver);
   if (this.attrs['onmouseover'] == null) {
     this.attrs['onmouseover'] = function(evt) {
@@ -155,7 +155,7 @@ TMITHRIL_UTIL.Element.prototype.mouseover = function(onMouseOver) {
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.mouseout = function(onMouseOut) {
+MITHRIL_UTIL.Element.prototype.mouseout = function(onMouseOut) {
   this._tm_mouseouts.push(onMouseOut);
   if (this.attrs['onmouseout'] == null) {
     this.attrs['onmouseout'] = function(evt) {
@@ -167,7 +167,7 @@ TMITHRIL_UTIL.Element.prototype.mouseout = function(onMouseOut) {
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.mouseup = function(onMouseuUp) {
+MITHRIL_UTIL.Element.prototype.mouseup = function(onMouseuUp) {
   this._tm_mouseups.push(onMouseuUp);
   if (this.attrs['onmouseup'] == null) {
     this.attrs['onmouseup'] = function(evt) {
@@ -179,12 +179,12 @@ TMITHRIL_UTIL.Element.prototype.mouseup = function(onMouseuUp) {
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.submit = function(onSubmit) {
+MITHRIL_UTIL.Element.prototype.submit = function(onSubmit) {
   this.attrs['onsubmit'] = onSubmit;
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.touchcancel = function(onTouchCancel) {
+MITHRIL_UTIL.Element.prototype.touchcancel = function(onTouchCancel) {
   this.config(function(element, isInitialized, context) {
     if (isInitialized) { return; }
     element.addEventListener('touchcancel', onTouchCancel, false);
@@ -192,7 +192,7 @@ TMITHRIL_UTIL.Element.prototype.touchcancel = function(onTouchCancel) {
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.touchend = function(onTouchEnd) {
+MITHRIL_UTIL.Element.prototype.touchend = function(onTouchEnd) {
   this.config(function(element, isInitialized, context) {
     if (isInitialized) { return; }
     element.addEventListener('touchend', onTouchEnd, false);
@@ -201,7 +201,7 @@ TMITHRIL_UTIL.Element.prototype.touchend = function(onTouchEnd) {
 };
 
 // OnTouchLeave is NOT A THING
-TMITHRIL_UTIL.Element.prototype.touchleave = function(onTouchLeave) {
+MITHRIL_UTIL.Element.prototype.touchleave = function(onTouchLeave) {
   this.config(function(element, isInitialized, context) {
     if (isInitialized) { return; }
     element.addEventListener('touchleave', onTouchLeave, false);
@@ -209,7 +209,7 @@ TMITHRIL_UTIL.Element.prototype.touchleave = function(onTouchLeave) {
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.touchmove = function(onTouchMove) {
+MITHRIL_UTIL.Element.prototype.touchmove = function(onTouchMove) {
   this.config(function(element, isInitialized, context) {
     if (isInitialized) { return; }
     element.addEventListener('touchmove', onTouchMove, false);
@@ -217,7 +217,7 @@ TMITHRIL_UTIL.Element.prototype.touchmove = function(onTouchMove) {
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.touchstart = function(onTouchStart) {
+MITHRIL_UTIL.Element.prototype.touchstart = function(onTouchStart) {
   this.config(function(element, isInitialized, context) {
     if (isInitialized) { return; }
     element.addEventListener('touchstart', onTouchStart, false);
@@ -226,12 +226,12 @@ TMITHRIL_UTIL.Element.prototype.touchstart = function(onTouchStart) {
 };
 
 
-TMITHRIL_UTIL.Element.prototype.key = function(key) {
+MITHRIL_UTIL.Element.prototype.key = function(key) {
   this.attrs['key'] = key;
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.addClass = function(className) {
+MITHRIL_UTIL.Element.prototype.addClass = function(className) {
   var origClass = this.attrs['class'];
   if (origClass == undefined) {
     this.attrs['class'] = className;
@@ -241,7 +241,7 @@ TMITHRIL_UTIL.Element.prototype.addClass = function(className) {
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.removeClass = function(className) {
+MITHRIL_UTIL.Element.prototype.removeClass = function(className) {
   var oldValue = this.attrs.class;
   if (oldValue != undefined) {
     var re = new RegExp('\\b' + className + '\\b', 'g');
@@ -249,18 +249,18 @@ TMITHRIL_UTIL.Element.prototype.removeClass = function(className) {
   }
 };
 
-TMITHRIL_UTIL.Element.prototype.appendTo = function(parentElement) {
+MITHRIL_UTIL.Element.prototype.appendTo = function(parentElement) {
   parentElement.append(this);
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.append = function(child) {
+MITHRIL_UTIL.Element.prototype.append = function(child) {
   this._initChildren();
   this.children.push(child);
   return this;
 };
 
-TMITHRIL_UTIL.Element.prototype.text = function(text) {
+MITHRIL_UTIL.Element.prototype.text = function(text) {
   if (typeof text === 'number') {
     text = '' + text;
   }

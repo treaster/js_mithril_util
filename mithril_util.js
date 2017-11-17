@@ -19,7 +19,7 @@ muGetAndClearParams = function() {
 }
 
 var softRoute = function(path) {
-  if (window.location.pathname != path) {
+  if (window.location.pathname !== path) {
     window.history.pushState({}, "", path);
   }
 };
@@ -34,6 +34,7 @@ function mu(tagName) {
 MITHRIL_UTIL.Element = function(tagName) {
   this.tag = tagName;
   this.attrs = {};
+  this.children = [];
   this._tm_configs = [];
   this._tm_mouseovers = [];
   this._tm_mouseouts = [];
@@ -44,13 +45,13 @@ MITHRIL_UTIL.Element.prototype = new Object();
 MITHRIL_UTIL.Element.prototype.constructor = MITHRIL_UTIL.Element;
 
 MITHRIL_UTIL.Element.prototype._initChildren = function() {
-  if (this.children == undefined) {
+  if (this.children === undefined) {
     this.children = [];
   }
 }
 
 MITHRIL_UTIL.Element.prototype.num_children = function() {
-  if (this.children == undefined) {
+  if (this.children === undefined) {
     return 0;
   }
   return this.children.length;
@@ -83,7 +84,7 @@ MITHRIL_UTIL.Element.prototype.click = function(onClick) {
 
 MITHRIL_UTIL.Element.prototype.config = function(config) {
   this._tm_configs.push(config);
-  if (this.attrs['config'] == null) {
+  if (this.attrs['config'] === null) {
     this.attrs['config'] = function(element, isInitialized, context) {
       for (var i = 0; i < this._tm_configs.length; ++i) {
         this._tm_configs[i](element, isInitialized, context);
@@ -145,7 +146,7 @@ MITHRIL_UTIL.Element.prototype.mousemove = function(onMouseMove) {
 
 MITHRIL_UTIL.Element.prototype.mouseover = function(onMouseOver) {
   this._tm_mouseovers.push(onMouseOver);
-  if (this.attrs['onmouseover'] == null) {
+  if (this.attrs['onmouseover'] === null) {
     this.attrs['onmouseover'] = function(evt) {
       for (var i = 0; i < this._tm_mouseovers.length; ++i) {
         this._tm_mouseovers[i](evt);
@@ -157,7 +158,7 @@ MITHRIL_UTIL.Element.prototype.mouseover = function(onMouseOver) {
 
 MITHRIL_UTIL.Element.prototype.mouseout = function(onMouseOut) {
   this._tm_mouseouts.push(onMouseOut);
-  if (this.attrs['onmouseout'] == null) {
+  if (this.attrs['onmouseout'] === null) {
     this.attrs['onmouseout'] = function(evt) {
       for (var i = 0; i < this._tm_mouseouts.length; ++i) {
         this._tm_mouseouts[i](evt);
@@ -169,7 +170,7 @@ MITHRIL_UTIL.Element.prototype.mouseout = function(onMouseOut) {
 
 MITHRIL_UTIL.Element.prototype.mouseup = function(onMouseuUp) {
   this._tm_mouseups.push(onMouseuUp);
-  if (this.attrs['onmouseup'] == null) {
+  if (this.attrs['onmouseup'] === null) {
     this.attrs['onmouseup'] = function(evt) {
       for (var i = 0; i < this._tm_mouseups.length; ++i) {
         this._tm_mouseups[i](evt);
@@ -243,7 +244,7 @@ MITHRIL_UTIL.Element.prototype.addClass = function(className) {
 
 MITHRIL_UTIL.Element.prototype.removeClass = function(className) {
   var oldValue = this.attrs.class;
-  if (oldValue != undefined) {
+  if (oldValue !== undefined) {
     var re = new RegExp('\\b' + className + '\\b', 'g');
     this.attrs.class = oldValue.replace(re, '');
   }
@@ -260,18 +261,41 @@ MITHRIL_UTIL.Element.prototype.append = function(child) {
   return this;
 };
 
-MITHRIL_UTIL.Element.prototype.text = function(text) {
+MITHRIL_UTIL.Element.prototype.appendList = function(children) {
+    for (var i = 0; i < children.length; ++i) {
+        this.append(children[i]);
+    }
+    return this;
+};
+
+MITHRIL_UTIL.Element.prototype.appendIf = function(condition, child) {
+  if (condition) {
+      this._initChildren();
+      this.children.push(child);
+  }
+  return this;
+};
+
+MITHRIL_UTIL.Element.prototype.map = function(elements, func) {
+    for (var i = 0; i < elements.length; ++i) {
+        var item = func(elements[i]);
+        this.append(item);
+    }
+    return this;
+}
+
+MITHRIL_UTIL.Element.prototype.setText = function(text) {
   if (typeof text === 'number') {
     text = '' + text;
   }
   if (typeof text === 'string') {
-    if (text != '') {
-      this.children = text;
+    if (text !== '') {
+      this.text = text;
     } else {
       console.log('Using empty string in mithril_util text().');
     }
   } else {
-    this.children = 'Mithril Error';
+    this.text = 'mithril_util error';
     console.log('Non-string, non-number argument to text(): "' + text + '"');
   }
   return this;

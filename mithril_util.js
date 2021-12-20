@@ -69,6 +69,13 @@ MITHRIL_UTIL.Element.prototype.attr = function(key, value) {
   return this;
 };
 
+MITHRIL_UTIL.Element.prototype.attrIf = function(condition, key, value) {
+  if (condition) {
+    this.attrs[key] = value;
+  }
+  return this;
+};
+
 MITHRIL_UTIL.Element.prototype.blur = function(onBlur) {
   this.attrs['onblur'] = onBlur;
   return this;
@@ -356,4 +363,11 @@ MITHRIL_UTIL.Element.prototype.setText = function(text) {
     console.log('mu warning: Non-string, non-number argument to text(): "' + text + '"');
   }
   return this;
+};
+
+MITHRIL_UTIL.Element.prototype.runIf = function(condition, func) {
+    if (condition) {
+        func(this);
+    }
+    return this;
 };

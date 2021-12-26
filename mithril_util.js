@@ -35,7 +35,7 @@ MITHRIL_UTIL.Element = function(tagName) {
   this.tag = tagName;
   this.attrs = {};
   this.children = [];
-  this._tm_configs = [];
+  this._tm_configs = {};
   this._tm_mouseovers = [];
   this._tm_mouseouts = [];
   this._tm_mouseenters = [];
@@ -91,15 +91,21 @@ MITHRIL_UTIL.Element.prototype.click = function(onClick) {
   return this;
 };
 
-MITHRIL_UTIL.Element.prototype.config = function(config) {
-  this._tm_configs.push(config);
-  if (!this.attrs['config']) {
-    this.attrs['config'] = function(element, isInitialized, context) {
-      for (let i = 0; i < this._tm_configs.length; ++i) {
-        this._tm_configs[i](element, isInitialized, context);
-      }
-    }.bind(this);
+MITHRIL_UTIL.Element.prototype.config = function(eventType, config) {
+    if (!(eventType in this._tm_configs)) {
+        this._tm_configs[eventType] = [];
+    }
+
+  this._tm_configs[eventType].push(config);
+  if (this.attrs['on' + eventType]) {
+      return this;
   }
+
+  this.attrs['on' + eventType] = evt => {
+    for (let i = 0; i < this._tm_configs[eventType].length; ++i) {
+      this._tm_configs[eventType][i](evt);
+    }
+  };
   return this;
 };
 
@@ -219,43 +225,28 @@ MITHRIL_UTIL.Element.prototype.submit = function(onSubmit) {
 };
 
 MITHRIL_UTIL.Element.prototype.touchcancel = function(onTouchCancel) {
-  this.config(function(element, isInitialized, context) {
-    if (isInitialized) { return; }
-    element.addEventListener('touchcancel', onTouchCancel, false);
-  });
+  this.config('touchcancel', onTouchCancel);
   return this;
 };
 
 MITHRIL_UTIL.Element.prototype.touchend = function(onTouchEnd) {
-  this.config(function(element, isInitialized, context) {
-    if (isInitialized) { return; }
-    element.addEventListener('touchend', onTouchEnd, false);
-  });
+  this.config('touchend', onTouchEnd);
   return this;
 };
 
 // OnTouchLeave is NOT A THING
 MITHRIL_UTIL.Element.prototype.touchleave = function(onTouchLeave) {
-  this.config(function(element, isInitialized, context) {
-    if (isInitialized) { return; }
-    element.addEventListener('touchleave', onTouchLeave, false);
-  });
+  this.config('touchleave', onTouchLeave);
   return this;
 };
 
 MITHRIL_UTIL.Element.prototype.touchmove = function(onTouchMove) {
-  this.config(function(element, isInitialized, context) {
-    if (isInitialized) { return; }
-    element.addEventListener('touchmove', onTouchMove, false);
-  });
+  this.config('touchmove', onTouchMove);
   return this;
 };
 
 MITHRIL_UTIL.Element.prototype.touchstart = function(onTouchStart) {
-  this.config(function(element, isInitialized, context) {
-    if (isInitialized) { return; }
-    element.addEventListener('touchstart', onTouchStart, false);
-  });
+  this.config('touchstart', onTouchStart);
   return this;
 };
 

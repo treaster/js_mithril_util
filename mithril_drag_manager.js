@@ -1,6 +1,6 @@
 'use strict';
 
-import { mu, secretGlobalState } from './mithril_util.js';
+import { mu, cancelLongPress } from './mithril_util.js';
 
 // An object to manage drag & drop operations with either mouse or touch events.
 // Instantiate the DragManager.
@@ -96,9 +96,7 @@ export class DragManager {
             document.body.addEventListener('touchmove', this._bodyDragmove);
 
             // cancel the long press
-            if (secretGlobalState.CANCEL_LONG_PRESS_FN) {
-                secretGlobalState.CANCEL_LONG_PRESS_FN();
-            }
+            cancelLongPress();
         };
     }
 

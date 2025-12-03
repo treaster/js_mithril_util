@@ -1,45 +1,15 @@
 'use strict';
 
-export function mu(tagName) {
-    return new Element(tagName);
+/**
+ * @param {string} tagname
+ * @returns {MuElement}
+ */
+export function mu(tagname) {
+    return new MuElement(tagname);
 }
 
 
-class SecretGlobalState {
-    constructor() {
-        this.DBL_CLICK_TIMEOUT_ID = null;
-        this.DBL_CLICK_FIRST_ELEMENT = null;
-
-        this.LONG_PRESS_TIMEOUT_ID = null;
-        this.LONG_PRESS_START_X = null;
-        this.LONG_PRESS_START_Y = null;
-        this.LONG_PRESS_CANCEL_FN = null;
-    }
-}
-
-export const secretGlobalState = new SecretGlobalState();
-
-
-export function toHtml(e) {
-    let attrs = [];
-    for (let k in e.attrs) {
-        let v = e.attrs[k];
-        attrs.push(`${k}="${v}"`);
-    }
-    let attrsString = attrs.join(" ");
-
-    let children = [];
-    for (let i = 0; i < e.children.length; ++i) {
-        let child = e.children[i];
-        children.push(toHtml(child));
-    }
-        
-    let childrenString = children.join("");
-    return `<${e.tag} ${attrsString}>${childrenString}</${e.tag}>`;
-}
-
-
-class Element {
+export class MuElement {
     constructor(tagName) {
         this.tag = tagName;
         this.attrs = {};
@@ -108,11 +78,17 @@ class Element {
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     click(onClick) {
         this.attrs['onclick'] = onClick;
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     longPress(onShortPress, onLongPress, onDblClick) {
         // We tried to store the timeout state in a local variable, but since
         // this handler is re-invoked on every page render by Mithril, the
@@ -123,17 +99,17 @@ class Element {
         // for now, which has the pleasant side effect that the application gets
         // long-press behavior for free.
         let cancelLongPress = () => {
-            clearTimeout(secretGlobalState.LONG_PRESS_TIMEOUT_ID);
-            secretGlobalState.LONG_PRESS_TIMEOUT_ID = null;
-            secretGlobalState.LONG_PRESS_START_X = null;
-            secretGlobalState.LONG_PRESS_START_Y = null;
-            secretGlobalState.LONG_PRESS_CANCEL_FN = null;
+            clearTimeout(LONG_PRESS_MANAGER.long_press_timeout_id);
+            LONG_PRESS_MANAGER.long_press_timeout_id = null;
+            LONG_PRESS_MANAGER.long_press_start_x = null;
+            LONG_PRESS_MANAGER.long_press_start_y = null;
+            LONG_PRESS_MANAGER.long_press_cancel_fn = null;
         }
 
         let clearDblClick = () => {
-            clearTimeout(secretGlobalState.DBL_CLICK_TIMEOUT_ID);
-            secretGlobalState.DBL_CLICK_TIMEOUT_ID = null;
-            secretGlobalState.DBL_CLICK_FIRST_ELEMENT = null;
+            clearTimeout(LONG_PRESS_MANAGER.dbl_click_timeout_id);
+            LONG_PRESS_MANAGER.dbl_click_timeout_id = null;
+            LONG_PRESS_MANAGER.dbl_click_first_element = null;
         }
 
         let downHandler = evt => {
@@ -141,8 +117,8 @@ class Element {
 
             // If we're in a doubleclick, fire the doubleclick handler and
             // do nothing else.
-            if (onDblClick && secretGlobalState.DBL_CLICK_TIMEOUT_ID !== null) {
-                if (evt.srcElement === secretGlobalState.DBL_CLICK_FIRST_ELEMENT) {
+            if (onDblClick && LONG_PRESS_MANAGER.dbl_click_timeout_id !== null) {
+                if (evt.srcElement === LONG_PRESS_MANAGER.dbl_click_first_element) {
                     onDblClick(evt);
                 }
                 clearDblClick();
@@ -152,33 +128,33 @@ class Element {
             // If we're not in doubleclick, note the first click and set up the
             // cancellation.
             if (onDblClick) {
-                secretGlobalState.DBL_CLICK_FIRST_ELEMENT = evt.srcElement;
+                LONG_PRESS_MANAGER.dbl_click_first_element = evt.srcElement;
 
-                secretGlobalState.DBL_CLICK_TIMEOUT_ID = setTimeout(() => {
+                LONG_PRESS_MANAGER.dbl_click_timeout_id = setTimeout(() => {
                     clearDblClick();
                 }, 500);
             }
 
             if (onLongPress) {
-                secretGlobalState.LONG_PRESS_TIMEOUT_ID = setTimeout(() => {
-                    secretGlobalState.LONG_PRESS_CANCEL_FN();
+                LONG_PRESS_MANAGER.long_press_timeout_id = setTimeout(() => {
+                    LONG_PRESS_MANAGER.long_press_cancel_fn();
                     onLongPress(evt);
                 }, 500);
-    
+
                 let loc = evt;
                 if (evt.changedTouches) {
                     loc = evt.changedTouches[0];
                 }
-                secretGlobalState.LONG_PRESS_START_X = loc.clientX;
-                secretGlobalState.LONG_PRESS_START_Y = loc.clientY;
-                secretGlobalState.LONG_PRESS_CANCEL_FN = cancelLongPress
+                LONG_PRESS_MANAGER.long_press_start_x = loc.clientX;
+                LONG_PRESS_MANAGER.long_press_start_y = loc.clientY;
+                LONG_PRESS_MANAGER.long_press_cancel_fn = cancelLongPress
             }
         };
 
         let upHandler = evt => {
-            if (secretGlobalState.LONG_PRESS_TIMEOUT_ID !== null) {
+            if (LONG_PRESS_MANAGER.long_press_timeout_id !== null) {
                 evt.preventDefault();
-                secretGlobalState.LONG_PRESS_CANCEL_FN();
+                LONG_PRESS_MANAGER.long_press_cancel_fn();
                 if (onShortPress) {
                     onShortPress(evt);
                 }
@@ -186,7 +162,7 @@ class Element {
         };
 
         let moveHandler = evt => {
-            if (secretGlobalState.LONG_PRESS_TIMEOUT_ID != null) {
+            if (LONG_PRESS_MANAGER.long_press_timeout_id != null) {
                 evt.preventDefault();
 
                 let loc = evt;
@@ -194,13 +170,13 @@ class Element {
                     loc = evt.changedTouches[0];
                 }
                 const threshold = evt.srcElement.clientHeight / 2;
-                let dx = loc.clientX - secretGlobalState.LONG_PRESS_START_X;
-                let dy = loc.clientY - secretGlobalState.LONG_PRESS_START_Y;
+                let dx = loc.clientX - LONG_PRESS_MANAGER.long_press_start_x;
+                let dy = loc.clientY - LONG_PRESS_MANAGER.long_press_start_y;
                 if (dx * dx + dy * dy < threshold) {
                     return;
                 }
 
-                secretGlobalState.LONG_PRESS_CANCEL_FN();
+                LONG_PRESS_MANAGER.long_press_cancel_fn();
             }
         };
 
@@ -216,6 +192,9 @@ class Element {
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     config(config) {
         this._tm_configs.push(config);
         if (!this.attrs['config']) {
@@ -228,132 +207,207 @@ class Element {
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     dragstart(onDragStart) {
         this.attrs['ondragstart'] = onDragStart;
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     dragenter(onDragEnter) {
         this.attrs['ondragenter'] = onDragEnter;
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     dragover(onDragOver) {
         this.attrs['ondragover'] = onDragOver;
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     dragleave(onDragLeave) {
         this.attrs['ondragleave'] = onDragLeave;
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     dropfunction(onDrop) {
         this.attrs['ondrop'] = onDrop;
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     input(onInput) {
         this.attrs['oninput'] = onInput;
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     keydown(onKeyDown) {
         this.attrs['onkeydown'] = onKeyDown;
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     keyup(onKeyUp) {
         this.attrs['onkeyup'] = onKeyUp;
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     mousedown(onMouseDown) {
         this._multiHandler('onmousedown', onMouseDown);
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     mousemove(onMouseMove) {
         this._multiHandler('onmousemove', onMouseMove);
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     mouseover(onMouseOver) {
         this._multiHandler('onmouseover', onMouseOver);
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     mouseout(onMouseOut) {
         this._multiHandler('onmouseout', onMouseOut);
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     mouseup(onMouseUp) {
         this._multiHandler('onmouseup', onMouseUp);
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     pointerdown(onpointerDown) {
         this.attrs['onpointerdown'] = onpointerDown;
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     pointermove(onpointerMove) {
         this.attrs['onpointermove'] = onpointerMove;
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     pointerover(onPointerOver) {
         this._multiHandler('onpointerover', onPointerOver);
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     pointerout(onPointerOut) {
         this._multiHandler('onpointerout', onPointerOut);
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     pointerup(onPointerUp) {
         this._multiHandler('onpointerup', onPointerUp);
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     submit(onSubmit) {
         this.attrs['onsubmit'] = onSubmit;
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     touchcancel(onTouchCancel) {
         this.attrs['ontouchcancel'] = onTouchCancel;
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     touchend(onTouchEnd) {
         this._multiHandler('ontouchend', onTouchEnd);
         return this;
     }
 
-    // OnTouchLeave is NOT A THING
     touchleave(onTouchLeave) {
+        // OnTouchLeave is NOT A THING. Don't call this method.
         throw new Error("OnTouchLeave is NOT A THING");
     }
 
+    /**
+     * @returns {MuElement}
+     */
     touchmove(onTouchMove) {
         this._multiHandler('ontouchmove', onTouchMove);
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     touchstart(onTouchStart) {
         this._multiHandler('ontouchstart', onTouchStart);
         return this;
     }
 
 
+    /**
+     * @returns {MuElement}
+     */
     key(key) {
         this.attrs['key'] = key;
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     addClass(className) {
         let origClass = this.attrs['class'];
         if (origClass == undefined) {
@@ -364,6 +418,9 @@ class Element {
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     addClassIf(condition, className) {
         if (!condition) {
             return this;
@@ -377,6 +434,9 @@ class Element {
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     style(attribute, value) {
         let style = {};
         if ('style' in this.attrs) {
@@ -387,17 +447,26 @@ class Element {
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     appendTo(parentElement) {
         parentElement.append(this);
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     append(child) {
         this._initChildren();
         this.children.push(child);
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     appendList(children) {
         for (let i = 0; i < children.length; ++i) {
             this.append(children[i]);
@@ -405,6 +474,9 @@ class Element {
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     appendIf(condition, child) {
         if (condition) {
             this._initChildren();
@@ -413,17 +485,12 @@ class Element {
         return this;
     }
 
-    map(elements, func) {
-        for (let i = 0; i < elements.length; ++i) {
-            let item = func(elements[i]);
-            this.append(item);
-        }
-        return this;
-    }
-
-    setText(text) {
+    /**
+     * @returns {MuElement}
+     */
+    appendTextNode(text) {
         if (typeof text === 'number') {
-            text = '' + text;
+            text = `${text}`;
         }
         if (typeof text === 'string') {
             if (text !== '') {
@@ -433,7 +500,7 @@ class Element {
             }
         } else {
             text = 'mithril_util error';
-            console.log('Non-string, non-number argument to text(): "' + text + '"');
+            console.log(`Non-string, non-number argument to text(): "${text}"`);
         }
         this.append({
             tag: "#",
@@ -442,6 +509,28 @@ class Element {
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
+    map(elements, func) {
+        for (let i = 0; i < elements.length; ++i) {
+            let item = func(elements[i]);
+            this.append(item);
+        }
+        return this;
+    }
+
+    /**
+     * @returns {MuElement}
+     */
+    setText(text) {
+        return this.appendTextNode(text);
+
+    }
+
+    /**
+     * @returns {MuElement}
+     */
     runIf(condition, func) {
         if (condition) {
             func(this);
@@ -449,10 +538,61 @@ class Element {
         return this;
     }
 
+    /**
+     * @returns {MuElement}
+     */
     setInnerHtml(html) {
         this.attr('oncreate', (vnode) => {
             vnode.dom.innerHTML = html;
         });
         return this;
+    }
+}
+
+
+/**
+ * @param {MuElement} e
+ * @returns {string}
+ */
+export function toHtml(e) {
+    let attrs = [];
+    for (let k in e.attrs) {
+        let v = e.attrs[k];
+        attrs.push(`${k}="${v}"`);
+    }
+    let attrsString = attrs.join(" ");
+
+    let children = [];
+    for (let i = 0; i < e.children.length; ++i) {
+        let child = e.children[i];
+        children.push(toHtml(child));
+    }
+
+    let childrenString = children.join("");
+    return `<${e.tag} ${attrsString}>${childrenString}</${e.tag}>`;
+}
+
+
+// LongPressManager is a global entity to track long-press events, and
+// (especially) make them cancellable. Works with DragManager, in
+// mithril_drag_manager.js.
+// We don't love this global-state implementation, but it works okay for now.
+class LongPressManager {
+    constructor() {
+        this.dbl_click_timeout_id = null;
+        this.dbl_click_first_element = null;
+
+        this.long_press_timeout_id = null;
+        this.long_press_start_x = null;
+        this.long_press_start_y = null;
+        this.long_press_cancel_fn = null;
+    }
+}
+
+const LONG_PRESS_MANAGER = new LongPressManager();
+
+export function cancelLongPress() {
+    if (LONG_PRESS_MANAGER.long_press_cancel_fn) {
+        LONG_PRESS_MANAGER.long_press_cancel_fn();
     }
 }
